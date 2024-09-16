@@ -13,7 +13,8 @@ add_executable(HelloWorld ${SOURCES})
 # when running g++ these will be included as -I/directory/path/
 target_include_directories(HelloWorld
     PRIVATE 
-        ${PROJECT_SOURCE_DIR}/includes
+        ${PROJECT_SOURCE_DIR}/includes/linux/
+        ${PROJECT_SOURCE_DIR}/includes/win/
 )
 
 # Specify the output directory for the executable
