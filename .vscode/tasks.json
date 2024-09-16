@@ -1,0 +1,205 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Win - CMake Configure Debug",
+      "type": "shell",
+      "command": "cmake",
+      "args": [
+        "-B",
+        "${workspaceFolder}/build",
+        "-S",
+        "${workspaceFolder}",
+        "-G",
+        "MinGW Makefiles",
+        "-DCMAKE_BUILD_TYPE=Debug",
+        "-DCMAKE_SH=\"CMAKE_SH-NOTFOUND\"",
+        "-DCMAKE_C_COMPILER=C:/msys64/ucrt64/bin/gcc.exe",
+        "-DCMAKE_CXX_COMPILER=C:/msys64/ucrt64/bin/g++.exe"
+      ],
+      "group": "build",
+      "problemMatcher": [],
+      "detail": "Configure the build system using MSYS2 g++ compiler."
+    },
+    {
+      "label": "Win - CMake Configure Release",
+      "type": "shell",
+      "command": "cmake",
+      "args": [
+        "-B",
+        "${workspaceFolder}/build",
+        "-S",
+        "${workspaceFolder}",
+        "-G",
+        "MinGW Makefiles",
+        "-DCMAKE_BUILD_TYPE=Release",
+        "-DCMAKE_SH=\"CMAKE_SH-NOTFOUND\"",
+        "-DCMAKE_C_COMPILER=C:/msys64/ucrt64/bin/gcc.exe",
+        "-DCMAKE_CXX_COMPILER=C:/msys64/ucrt64/bin/g++.exe"
+      ],
+      "group": "build",
+      "problemMatcher": [],
+      "detail": "Configure the build system using MSYS2 g++ compiler."
+    },
+    {
+      "label": "Win - Build Debug",
+      "dependsOn": "CMake Configure Debug",
+      "type": "shell",
+      "command": "cmake",
+      "args": [
+        "--build",
+        "${workspaceFolder}/build"
+      ],
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "problemMatcher": [
+        "$gcc"
+      ],
+      "detail": "Build in Debug mode"
+    },
+    {
+      "label": "Win - Build Release",
+      "dependsOn": "CMake Configure Release",
+      "type": "shell",
+      "command": "cmake",
+      "args": [
+        "--build",
+        "${workspaceFolder}/build"
+      ],
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "problemMatcher": [
+        "$gcc"
+      ],
+      "detail": "Build in Release mode"
+    },
+    {
+      "label": "Win - Strip Executables",
+      "type": "shell",
+      "command": "strip",
+      "args": [
+        "--strip-all",
+        "${workspaceFolder}/build/bin/*"
+      ],
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "detail": "Strip all symbols from executables in the build/bin directory"
+    },
+    {
+      "label": "Win - Build Release & Strip",
+      "dependsOn": "Build Release",
+      "type": "shell",
+      "command": "strip",
+      "args": [
+        "--strip-all",
+        "${workspaceFolder}/build/bin/*"
+      ],
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "detail": "Strip all symbols from executables in the build/bin directory"
+    },
+    {
+      "label": "Linux - CMake Configure Debug",
+      "type": "shell",
+      "command": "cmake",
+      "args": [
+        "-B",
+        "${workspaceFolder}/build",
+        "-S",
+        "${workspaceFolder}",
+        "-DCMAKE_BUILD_TYPE=Debug"
+      ],
+      "group": "build",
+      "problemMatcher": [],
+      "detail": "Configure the build system for Debug mode"
+    },
+    {
+      "label": "Linux - CMake Configure Release",
+      "type": "shell",
+      "command": "cmake",
+      "args": [
+        "-B",
+        "${workspaceFolder}/build",
+        "-S",
+        "${workspaceFolder}",
+        "-DCMAKE_BUILD_TYPE=Release"
+      ],
+      "group": "build",
+      "problemMatcher": [],
+      "detail": "Configure the build system for Release mode"
+    },
+    {
+      "label": "Linux - Build Debug",
+      "dependsOn": "Linux - CMake Configure Debug",
+      "type": "shell",
+      "command": "cmake",
+      "args": [
+        "--build",
+        "${workspaceFolder}/build"
+      ],
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "problemMatcher": [
+        "$gcc"
+      ],
+      "detail": "Build in Debug mode"
+    },
+    {
+      "label": "Linux - Build Release",
+      "dependsOn": "Linux - CMake Configure Release",
+      "type": "shell",
+      "command": "cmake",
+      "args": [
+        "--build",
+        "${workspaceFolder}/build"
+      ],
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "problemMatcher": [
+        "$gcc"
+      ],
+      "detail": "Build in Release mode"
+    },
+    {
+      "label": "Linux - Strip Executables",
+      "type": "shell",
+      "command": "strip",
+      "args": [
+        "--strip-all",
+        "${workspaceFolder}/build/bin/*"
+      ],
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "detail": "Strip all symbols from executables in the build/bin directory"
+    },
+    {
+      "label": "Linux - Build Release & Strip",
+      "dependsOn": "Linux - Build Release",
+      "type": "shell",
+      "command": "strip",
+      "args": [
+        "--strip-all",
+        "${workspaceFolder}/build/bin/*"
+      ],
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "detail": "Build in Release mode and strip all symbols from executables"
+    }
+  ]
+}
