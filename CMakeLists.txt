@@ -10,18 +10,19 @@ if (WIN32)
     set(HELLO_WORLD_SOURCES
         src/main.cpp
     )
-    set(SERVER_SOURCES
-        src/server.cpp
-    )
-    set(CLIENT_SOURCES 
-        src/client.cpp
-    )
 else()
     set(HELLO_WORLD_SOURCES
         src/main.cpp
         src/hello.cpp
     )
 endif()
+
+set(SERVER_SOURCES
+    src/server.cpp
+)
+set(CLIENT_SOURCES 
+    src/client.cpp
+)
 
 add_executable(HelloWorld ${HELLO_WORLD_SOURCES})
 add_executable(server ${SERVER_SOURCES})
