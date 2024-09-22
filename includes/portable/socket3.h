@@ -133,9 +133,9 @@
     recv((int)(sockfd), (char *)(buf), (size_t)(len), (int)(flags))
 #endif
 
-class SocketClient {
+class SocketServer {
    public:
-    static int main(int argc, char *argv[]) {
+    static int main() {
 #if defined(_WIN32)
         WSADATA d;
         if (WSAStartup(MAKEWORD(2, 2), &d)) {
@@ -143,102 +143,135 @@ class SocketClient {
             return 1;
         }
 #endif
-        if (argc < 3) {
-            fprintf(stderr, "usage: client.exe <hostname> <port>\n");
-            return 1;
-        }
 
-        printf("Configuring remote address...\n");
+        printf("Configuring local address...\n");
         struct addrinfo hints;
         memset(&hints, 0, sizeof(hints));
+        hints.ai_family = AF_INET;
         hints.ai_socktype = SOCK_STREAM;
-        struct addrinfo *peer_address;
-        if (SOCKET_GETADDRINFO(argv[1], argv[2], &hints, &peer_address)) {
-            fprintf(stderr, "getaddrinfo() failed. (%d)\n",
-                    SOCKET_GETSOCKETERRNO());
-            return 1;
-        }
+        hints.ai_flags = AI_PASSIVE;
 
-        printf("Remote address is: ");
-        char address_buffer[100];
-        char service_buffer[100];
-        SOCKET_GETNAMEINFO(peer_address->ai_addr, peer_address->ai_addrlen,
-                           address_buffer, sizeof(address_buffer),
-                           service_buffer, sizeof(service_buffer),
-                           NI_NUMERICHOST);
-        printf("%s %s\n", address_buffer, service_buffer);
+        struct addrinfo *bind_address;
+        SOCKET_GETADDRINFO(0, "8080", &hints, &bind_address);
 
         printf("Creating socket...\n");
-        SOCKET socket_peer;
-        socket_peer = SOCKET_CREATESOCKET(peer_address->ai_family,
-                                          peer_address->ai_socktype,
-                                          peer_address->ai_protocol);
-        if (!SOCKET_ISVALIDSOCKET(socket_peer)) {
+        SOCKET socket_listen;
+        socket_listen = SOCKET_CREATESOCKET(bind_address->ai_family,
+                                            bind_address->ai_socktype,
+                                            bind_address->ai_protocol);
+        if (!SOCKET_ISVALIDSOCKET(socket_listen)) {
             fprintf(stderr, "socket() failed. (%d)\n", SOCKET_GETSOCKETERRNO());
+            SOCKET_FREEADDRINFO(bind_address);
             return 1;
         }
 
-        printf("Connecting...\n");
-        if (SOCKET_CONNECT(socket_peer, peer_address->ai_addr,
-                           peer_address->ai_addrlen)) {
-            fprintf(stderr, "connect() failed. (%d)\n",
-                    SOCKET_GETSOCKETERRNO());
+        printf("Binding socket to local address...\n");
+        if (bind(socket_listen, bind_address->ai_addr,
+                 static_cast<int>(bind_address->ai_addrlen))) {
+            fprintf(stderr, "bind() failed. (%d)\n", SOCKET_GETSOCKETERRNO());
+            SOCKET_FREEADDRINFO(bind_address);
             return 1;
         }
-        SOCKET_FREEADDRINFO(peer_address);
+        // Retrieve the bound address info using getsockname()
+        sockaddr_in local_address;
+        socklen_t address_length = sizeof(local_address);
+        if (getsockname(socket_listen, (sockaddr *)&local_address,
+                        &address_length) == 0) {
+            char address_buffer[100];
+            char service_buffer[30];
+            SOCKET_GETNAMEINFO((sockaddr *)&local_address, address_length,
+                        address_buffer, sizeof(address_buffer), service_buffer,
+                        sizeof(service_buffer),
+                        NI_NUMERICHOST | NI_NUMERICSERV);
 
-        printf("Connected.\n");
-        printf("To send data, enter text followed by enter.\n");
+            printf("Bound to IP: %s, Port: %s\n", address_buffer,
+                   service_buffer);
+        } else {
+            printf("Failed to get local address.\n");
+        }
+        SOCKET_FREEADDRINFO(bind_address);
 
-        while (1) {
-            fd_set reads;
-            FD_ZERO(&reads);
-            FD_SET(socket_peer, &reads);
-#if !defined(_WIN32)
-            FD_SET(0, &reads);
-#endif
+        printf("Listening...\n");
+        if (listen(socket_listen, 10) < 0) {
+            fprintf(stderr, "listen() failed. (%d)\n", SOCKET_GETSOCKETERRNO());
+            SOCKET_FREEADDRINFO(bind_address);
+            return 1;
+        }
 
-            struct timeval timeout;
-            timeout.tv_sec = 0;
-            timeout.tv_usec = 100000;
+        fd_set master;
+        FD_ZERO(&master);
+        FD_SET(socket_listen, &master);
+        SOCKET max_socket = socket_listen;
 
-            if (SOCKET_SELECT(socket_peer + 1, &reads, 0, 0, &timeout) < 0) {
+        printf("Waiting for connections...\n");
+
+        while (true) {
+            fd_set reads = master;
+            printf("Waiting for activity on %d sockets.\n", static_cast<int>(max_socket + 1));
+            int activity = SOCKET_SELECT(max_socket + 1, &reads, 0, 0, NULL);
+            if (activity < 0) {
                 fprintf(stderr, "select() failed. (%d)\n",
                         SOCKET_GETSOCKETERRNO());
+                SOCKET_FREEADDRINFO(bind_address);
                 return 1;
             }
+            printf("Select detected %d activity.\n", activity);
 
-            if (FD_ISSET(socket_peer, &reads)) {
-                char read[4096];
-                int bytes_received = SOCKET_RECV(socket_peer, read, 4096, 0);
-                if (bytes_received < 1) {
-                    printf("Connection closed by peer.\n");
-                    break;
-                }
-                printf("Received (%d bytes): %.*s", bytes_received,
-                       bytes_received, read);
-            }
+            SOCKET i;
+            for (i = 0; i <= max_socket; ++i) {
+                if (FD_ISSET(i, &reads)) {
+                    if (i == socket_listen) {
+                        struct sockaddr_storage client_address;
+                        socklen_t client_len = sizeof(client_address);
+                        SOCKET socket_client = accept(
+                            socket_listen, (struct sockaddr *)&client_address,
+                            &client_len);
+                        if (!SOCKET_ISVALIDSOCKET(socket_client)) {
+                            fprintf(stderr, "accept() failed. (%d)\n",
+                                    SOCKET_GETSOCKETERRNO());
+                            SOCKET_FREEADDRINFO(i);
+                            return 1;
+                        }
 
-#if defined(_WIN32)
-            if (_kbhit()) {
-#else
-            if (FD_ISSET(0, &reads)) {
-#endif
-                char read[4096];
-                if (!fgets(read, 4096, stdin)) break;
-                printf("Sending: %s", read);
-                int bytes_sent = send(socket_peer, read, static_cast<int>(strlen(read)), 0);
-                printf("Sent %d bytes.\n", bytes_sent);
-            }
-        }  // end while(1)
+                        FD_SET(socket_client, &master);
+                        if (socket_client > max_socket)
+                            max_socket = socket_client;
 
-        printf("Closing socket...\n");
-        SOCKET_CLOSESOCKET(socket_peer);
+                        char address_buffer[100];
+                        SOCKET_GETNAMEINFO((struct sockaddr *)&client_address,
+                                           client_len, address_buffer,
+                                           sizeof(address_buffer), 0, 0,
+                                           NI_NUMERICHOST);
+                        printf("New connection from %s\n", address_buffer);
+
+                    } else {
+                        char read[1024];
+                        int bytes_received = SOCKET_RECV(i, read, 1024, 0);
+                        if (bytes_received < 1) {
+                            FD_CLR(i, &master);
+                            SOCKET_CLOSESOCKET(i);
+                            continue;
+                        }
+
+                        int j;
+                        for (j = 0; j < bytes_received; ++j)
+                            read[j] = toupper(read[j]);
+                        send(i, read, bytes_received, 0);
+                    }
+
+                }  // if FD_ISSET
+            }      // for i to max_socket
+        }          // while(1)
+
+        printf("Closing listening socket...\n");
+        SOCKET_CLOSESOCKET(socket_listen);
 
 #if defined(_WIN32)
         WSACleanup();
 #endif
+
         printf("Finished.\n");
+
         return 0;
-    }
+    };
 };

@@ -1,3 +1,4 @@
 out
 .vs
+!.vs/launch.vs.json
 [Bb]uild

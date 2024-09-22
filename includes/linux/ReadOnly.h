@@ -8,7 +8,7 @@ class ReadOnlyAccess {
     static void Run() {
         const char* c = "Bob";
         const char* label = "Read=";
-        long const num_threads = std::thread::hardware_concurrency();
+        const long num_threads = std::thread::hardware_concurrency();
         std::vector<std::thread> threads(num_threads - 1);
         for (long i = 0; i < num_threads - 1; i++) {
             threads[i] = std::thread([&]() {

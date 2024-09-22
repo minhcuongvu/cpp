@@ -1,0 +1,41 @@
+{
+  "version": "0.2.1",
+  "defaults": {},
+  "configurations": [
+    {
+      "type": "default",
+      "project": "CMakeLists.txt",
+      "projectTarget": "HelloWorld.exe (bin\\HelloWorld.exe)",
+      "name": "HelloWorld.exe (bin\\HelloWorld.exe)"
+    },
+    {
+      "type": "cppgdb",
+      "name": "HelloWorld",
+      "project": "CMakeLists.txt",
+      "projectTarget": "HelloWorld",
+      "comment": "Learn how to configure WSL debugging. For more info, see http://aka.ms/vslinuxdebug",
+      "debuggerConfiguration": "gdb",
+      "args": [
+        "example.com",
+        "80"
+      ],
+      "env": {}
+    },
+    {
+      "type": "default",
+      "project": "CMakeLists.txt",
+      "projectTarget": "client.exe (bin\\client.exe)",
+      "name": "client.exe (bin\\client.exe)",
+      "args": [
+        "127.0.0.1",
+        "8080"
+      ]
+    },
+    {
+      "type": "default",
+      "project": "CMakeLists.txt",
+      "projectTarget": "server.exe (bin\\server.exe)",
+      "name": "server.exe (bin\\server.exe)"
+    }
+  ]
+}

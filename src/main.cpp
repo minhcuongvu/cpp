@@ -10,13 +10,16 @@
 #include "SquareRootException.h"
 #include "StringConcat.h"
 #include "Threading.h"
-#include "hello.h"
-#include "sock_init.h"
 #include "unix_list.h"
 #endif
 
+#pragma region PORTABLE
+#include "hello.h"
 #include "socket1.h"
 #include "socket2.h"
+#include "socket3.h"
+#include "socket_init.h"
+#pragma endregion
 
 int main(int argc, char* argv[]) {
     // Greeting::SayHello();
@@ -26,13 +29,13 @@ int main(int argc, char* argv[]) {
     // NetworkedClock::Init();
     // NetworkedClock::Main();
     // ThreadingTest::Init();
-    // IndentifyingThread indentifyingThread(std::move(std::thread([]() {})));
+    // IdentifyingThread identifyingThread(std::move(std::thread([]() {})));
     // ReadOnlyAccess::Run();
     // StringConcat::PrintConcat("Beep", "Boop");
     // SquareRootException::Main();
     // DODThreading::main();
-    // Atomic4::main();
+    Atomic4::main();
     // Socket1::main(argc, argv);
-    Socket2::main(argc, argv);
+    // SocketClient::main(argc, argv);
     return 0;
 }
