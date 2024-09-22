@@ -1,6 +1,6 @@
-# cpp on linux
+# cpp
 
-## setup gdb, cmake
+## setup gdb, cmake on Linux
 
 ```shell
 sudo apt update -y &&\
@@ -9,7 +9,7 @@ sudo add-apt-repository ppa:ubuntu-toolchain-r/test &&\
 sudo apt upgrade -y libstdc++6
 ```
 
-## setup GCC
+## setup GCC on Linux
 
 download from [Index of /gnu/gcc](https://ftp.gnu.org/gnu/gcc/)
 
