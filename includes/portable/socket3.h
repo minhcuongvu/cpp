@@ -1,3 +1,5 @@
+#include <cctype>
+#include <cstdint>
 #ifdef _WIN32
 #ifndef _WIN32_WINNT
 #define _WIN32_WINNT 0x0600
@@ -32,7 +34,7 @@
 #define SOCKET_CLOSESOCKET(s) close(s)
 #endif
 #ifndef SOCKET
-#define SOCKET int
+#define SOCKET intptr_t
 #endif
 #ifndef SOCKET_GETSOCKETERRNO
 #define SOCKET_GETSOCKETERRNO() (errno)
@@ -151,8 +153,14 @@ class SocketServer {
         hints.ai_socktype = SOCK_STREAM;
         hints.ai_flags = AI_PASSIVE;
 
-        struct addrinfo *bind_address;
-        SOCKET_GETADDRINFO(0, "8080", &hints, &bind_address);
+        struct addrinfo *bind_address = nullptr;
+        int SOCKET_GETADDRINFO_ERR =
+            SOCKET_GETADDRINFO(0, "8080", &hints, &bind_address);
+        if (SOCKET_GETADDRINFO_ERR != 0) {
+            fprintf(stderr, "getaddrinfo() failed. (%d)\n",
+                    SOCKET_GETADDRINFO_ERR);
+            return 1;
+        }
 
         printf("Creating socket...\n");
         SOCKET socket_listen;
@@ -172,6 +180,7 @@ class SocketServer {
             SOCKET_FREEADDRINFO(bind_address);
             return 1;
         }
+
         // Retrieve the bound address info using getsockname()
         sockaddr_in local_address;
         socklen_t address_length = sizeof(local_address);
@@ -180,9 +189,9 @@ class SocketServer {
             char address_buffer[100];
             char service_buffer[30];
             SOCKET_GETNAMEINFO((sockaddr *)&local_address, address_length,
-                        address_buffer, sizeof(address_buffer), service_buffer,
-                        sizeof(service_buffer),
-                        NI_NUMERICHOST | NI_NUMERICSERV);
+                               address_buffer, sizeof(address_buffer),
+                               service_buffer, sizeof(service_buffer),
+                               NI_NUMERICHOST | NI_NUMERICSERV);
 
             printf("Bound to IP: %s, Port: %s\n", address_buffer,
                    service_buffer);
@@ -207,7 +216,8 @@ class SocketServer {
 
         while (true) {
             fd_set reads = master;
-            printf("Waiting for activity on %d sockets.\n", static_cast<int>(max_socket + 1));
+            printf("Waiting for activity on %d sockets.\n",
+                   static_cast<int>(max_socket + 1));
             int activity = SOCKET_SELECT(max_socket + 1, &reads, 0, 0, NULL);
             if (activity < 0) {
                 fprintf(stderr, "select() failed. (%d)\n",
@@ -229,7 +239,7 @@ class SocketServer {
                         if (!SOCKET_ISVALIDSOCKET(socket_client)) {
                             fprintf(stderr, "accept() failed. (%d)\n",
                                     SOCKET_GETSOCKETERRNO());
-                            SOCKET_FREEADDRINFO(i);
+                            /*SOCKET_FREEADDRINFO(i);*/
                             return 1;
                         }
 
@@ -260,8 +270,8 @@ class SocketServer {
                     }
 
                 }  // if FD_ISSET
-            }      // for i to max_socket
-        }          // while(1)
+            }  // for i to max_socket
+        }  // while(1)
 
         printf("Closing listening socket...\n");
         SOCKET_CLOSESOCKET(socket_listen);

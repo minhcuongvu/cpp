@@ -1,11 +1,13 @@
 #include "hello.h"
 
-void Greeting::SayHello()
-{
-    vector<string> msg{"Hello", "World"};
-    for (const string &word : msg)
-    {
-        cout << word << " ";
+#include <iostream>
+#include <string>
+#include <vector>
+
+void Greeting::SayHello() {
+    std::vector<std::string> msg{"Hello", "World"};
+    for (const std::string &word : msg) {
+        std::cout << word << " ";
     }
-    cout << endl;
+    std::cout << std::endl;
 }

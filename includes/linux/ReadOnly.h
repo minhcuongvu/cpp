@@ -1,4 +1,5 @@
 #include <algorithm>
+#include <cstring>
 #include <functional>
 #include <iostream>
 #include <thread>
@@ -15,8 +16,8 @@ class ReadOnlyAccess {
                 const std::thread::id t_id = std::this_thread::get_id();
                 int txt_size = static_cast<int>(strlen(label) + strlen(c) + 1);
                 char* txt = new char[txt_size];
-                strcpy(txt,label);
-                strcat(txt,c);
+                strcpy(txt, label);
+                strcat(txt, c);
                 std::cout << std::this_thread::get_id() << txt << std::endl;
             });
         }

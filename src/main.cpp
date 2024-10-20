@@ -22,19 +22,19 @@
 #pragma endregion
 
 int main(int argc, char* argv[]) {
-    // Greeting::SayHello();
+    Greeting::SayHello();
     // Unix::ListAdapters();
     // Win::ListAdapters();
     // SocketInit::Init();
     // NetworkedClock::Init();
     // NetworkedClock::Main();
     // ThreadingTest::Init();
-    // IdentifyingThread identifyingThread(std::move(std::thread([]() {})));
+    IndentifyingThread identifyingThread(std::move(std::thread([]() {})));
     // ReadOnlyAccess::Run();
     // StringConcat::PrintConcat("Beep", "Boop");
     // SquareRootException::Main();
     // DODThreading::main();
-    Atomic4::main();
+    // Atomic4::main();
     // Socket1::main(argc, argv);
     // SocketClient::main(argc, argv);
     return 0;
